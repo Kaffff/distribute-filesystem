@@ -1,0 +1,28 @@
+{
+  "name": "@types/orbit-db",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Unofficial typings for orbit-db",
+  "types": "index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lukas2005/orbit-db-types.git"
+  },
+  "keywords": [
+    "@types",
+    "typescript",
+    "orbit-db"
+  ],
+  "author": "lukas2005",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lukas2005/orbit-db-types/issues"
+  },
+  "homepage": "https://github.com/lukas2005/orbit-db-types#readme",
+  "dependencies": {
+    "@types/elliptic": "^6.4.6",
+    "@types/events": "^1.2.0",
+    "@types/ipfs": "git+https://github.com/lukas2005/types-ipfs.git",
+    "orbit-db": "git+https://github.com/orbitdb/orbit-db.git"
+  }
+}
