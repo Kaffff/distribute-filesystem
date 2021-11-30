@@ -6,11 +6,10 @@ export type FileTable = {
 
 export type FileInfo = {
     cid: string;
-    ownerID: string;
 };
 
 export type FilePermission = {
-    id: string;
+    id: Id;
     encryptedReadKey: string;
     canWrite: boolean;
 };
@@ -20,3 +19,11 @@ export type CreateOptions = {
     identityId?: string;
     ipfsUrl?: string;
 };
+
+export type Role = {
+    id: Id;
+    mode: Mode;
+};
+
+export type Id = string;
+export type Mode = "w" | "r";

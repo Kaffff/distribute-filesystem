@@ -3,6 +3,7 @@ declare module "orbit-db-store" {
     import { Identity } from "orbit-db-identity-provider";
     import { EventEmitter } from "events";
     import * as elliptic from "elliptic";
+    import AccessController from "orbit-db-access-controllers/src/access-controller-interface";
 
     export default class Store {
         /**
@@ -25,6 +26,8 @@ declare module "orbit-db-store" {
         replicationStatus: IReplicationStatus;
 
         events: EventEmitter;
+
+        access: AccessController;
 
         /**
          * Apparently not meant for outside usage

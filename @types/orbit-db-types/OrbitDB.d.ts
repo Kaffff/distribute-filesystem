@@ -1,5 +1,6 @@
 /// <reference path="./DBOptions.d.ts" />
 /// <reference path="./LogEntry.d.ts" />
+
 declare module "orbit-db" {
     import Store from "orbit-db-store";
     import KeyValueStore from "orbit-db-kvstore";
@@ -13,6 +14,7 @@ declare module "orbit-db" {
     import { IPFSHTTPClient } from "ipfs-http-client";
     import * as elliptic from "elliptic";
     import OrbitDBAddress from "orbit-db";
+    import AccessControllers from "orbit-db-access-controllers";
     export function createInstance<T = {}>(
         ipfs: IPFS<T>,
         options?: {
@@ -21,6 +23,7 @@ declare module "orbit-db" {
             keystore?: Keystore;
             cache?: Cache<any>;
             identity?: Identity;
+            AccessControllers?: AccessControllers;
         }
     ): Promise<OrbitDB>;
     export class OrbitDB {
@@ -30,6 +33,7 @@ declare module "orbit-db" {
         stores: any;
         directory: string;
         keystore: Keystore;
+        identity: Identity;
 
         // For OpenTelemetry Plugin
         span?: any;
