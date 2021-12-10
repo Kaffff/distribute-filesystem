@@ -15,5 +15,5 @@
         "types": ["node"],
         "downlevelIteration": true
     },
-    "include": ["src", "@types", "test/filesystem.spec.ts"]
+    "include": ["src", "@types", "test/filesystem.spec.ts", "test"]
 }

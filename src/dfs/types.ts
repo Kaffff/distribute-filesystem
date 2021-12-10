@@ -1,29 +1,25 @@
-export type FileTable = {
+export type MetadataStore = {
     path: string;
-    infoAddress: string;
-    permissionAddress: string;
+    metadataAddress: string;
 };
 
-export type FileInfo = {
+export type Metadata = {
     cid: string;
+    stringifiedReadKeys: string;
 };
 
-export type FilePermission = {
-    id: Id;
+export type ReadKey = {
+    id: string;
     encryptedReadKey: string;
-    canWrite: boolean;
 };
 
 export type CreateOptions = {
-    fileTableAddress?: string;
+    metadataStoreAddress?: string;
     identityId?: string;
     ipfsUrl?: string;
 };
 
-export type Role = {
-    id: Id;
-    mode: Mode;
+export type ACL = {
+    read: string[];
+    write: string[];
 };
-
-export type Id = string;
-export type Mode = "w" | "r";

@@ -31,6 +31,7 @@ declare module "orbit-db-access-controllers/src/access-controller-interface" {
         /* Each Access Controller has some address to anchor to */
         get address(): string;
 
+        get write(): string[];
         /*
             Called by the databases (the log) to see if entry should
             be allowed in the database. Return true if the entry is allowed,

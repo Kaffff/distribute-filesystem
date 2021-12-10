@@ -10,7 +10,7 @@ const App = () => {
     const writeFileEntryRef = createRef<HTMLInputElement>();
     const create = async (address: any) => {
         console.log(address);
-        setFs(await FS.createFS({ fileTableAddress: address }));
+        setFs(await FS.createFS({ metadataStoreAddress: address }));
     };
     const readdir = async (path: any) => {
         const res = await fs!.readdir(path);

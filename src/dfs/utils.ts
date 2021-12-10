@@ -3,7 +3,7 @@ import { AES, enc } from "crypto-js";
 import { keys } from "libp2p-crypto";
 import { encrypt, decrypt } from "eciesjs";
 import OrbitDB from "orbit-db";
-import { FileInfo, FilePermission, FileTable, Id, Mode, Role } from "./types";
+import { Metadata, MetadataStore } from "./types";
 import DocumentStore from "orbit-db-docstore";
 import pathBrowserify from "path-browserify";
 
@@ -31,119 +31,44 @@ export async function downloadFile(
     return enc.Utf8.stringify(data);
 }
 
-export async function getFileMetadataDB(
+export async function getMetadata(
     orbitdb: OrbitDB,
-    fileTable: DocumentStore<FileTable>,
+    metadataStore: DocumentStore<MetadataStore>,
     path: string,
-    options: {
-        create: boolean;
-        writeAccess: string[];
-    } = { create: false, writeAccess: [] }
+    options: { create: boolean; writeAccess?: string[] } = { create: false }
 ) {
-    await fileTable.load();
-    const file = fileTable.query((f) => path === f.path)[0];
+    path = pathBrowserify.join("/", path);
+    await metadataStore.load();
+    const file = metadataStore.query((f) => path === f.path)[0];
+    let metadata;
     if (file) {
-        const infoDB = await orbitdb.docstore<FileInfo>(file.infoAddress, {
+        metadata = await orbitdb.docstore<Metadata>(file.metadataAddress, {
             indexBy: "cid",
-            accessController: {
-                type: "orbitdb",
-            },
         });
-        await infoDB.load();
-        const permissionDB = await orbitdb.docstore<FilePermission>(
-            file.permissionAddress,
-            {
-                indexBy: "id",
-                accessController: {
-                    type: "orbitdb",
-                },
-            }
-        );
-        await permissionDB.load();
-        return { infoDB, permissionDB };
     } else {
         if (!options.create) throw new Error(`no such file: ${path}`);
-        const infoDB = await orbitdb.docstore<FileInfo>(
+        if (!options.writeAccess) options.writeAccess = [];
+        metadata = await orbitdb.docstore<Metadata>(
             pathBrowserify.join("__INFO__", path),
             {
                 indexBy: "cid",
                 accessController: {
-                    type: "orbitdb",
-                    write: [fileTable.identity.id, ...options.writeAccess],
+                    write: Array.from(
+                        new Set([
+                            metadataStore.identity.id,
+                            ...options.writeAccess,
+                        ])
+                    ),
                 },
             }
         );
-        await infoDB.load();
-        const permissionDB = await orbitdb.docstore<FilePermission>(
-            pathBrowserify.join("__PERMISSION__", path),
-            {
-                indexBy: "id",
-                accessController: {
-                    type: "orbitdb",
-                    write: [fileTable.identity.id, ...options.writeAccess],
-                },
-            }
-        );
-        await permissionDB.load();
-        await fileTable.put({
+        await metadataStore.put({
             path,
-            infoAddress: infoDB.address.toString(),
-            permissionAddress: permissionDB.address.toString(),
-        });
-        return { infoDB, permissionDB };
-    }
-}
-
-export async function uploadFilePermission(
-    permissionDB: DocumentStore<FilePermission>,
-    readKey: string,
-    permission?: Role[]
-) {
-    await permissionDB.load();
-    let entries: FilePermission[] = [];
-    if (!permission) {
-        entries = permissionDB.get("");
-    } else {
-        entries = permission.map(({ id, mode }) => {
-            const canWrite = mode === "w";
-            return {
-                id,
-                encryptedReadKey: "",
-                canWrite,
-            };
+            metadataAddress: metadata.address.toString(),
         });
     }
-    //自分のid
-    entries.push({
-        id: permissionDB.identity.id,
-        encryptedReadKey: "",
-        canWrite: true,
-    });
-    entries.forEach(async (entry) => {
-        const encryptedReadKey = await encryptKey(readKey, entry.id);
-        await permissionDB.put({
-            id: entry.id,
-            encryptedReadKey,
-            canWrite: entry.canWrite,
-        });
-    });
-}
-export async function uploadFileInfo(
-    infoDB: DocumentStore<FileInfo>,
-    cid: string
-) {
-    await infoDB.load();
-    await infoDB.put({ cid });
-}
-
-export async function getReadKey(
-    permissionDB: DocumentStore<FilePermission>,
-    sk: keys.supportedKeys.secp256k1.Secp256k1PrivateKey
-) {
-    const encryptedReadKey = permissionDB.get(permissionDB.identity.id)[0]
-        ?.encryptedReadKey;
-    if (!encryptedReadKey) throw new Error(`you don't have read permission`);
-    return await decryptKey(encryptedReadKey, sk);
+    await metadata.load();
+    return metadata;
 }
 
 export function encryptKey(key: string, id: string) {
