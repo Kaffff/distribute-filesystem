@@ -3,7 +3,7 @@ import { AES, enc } from "crypto-js";
 import { keys } from "libp2p-crypto";
 import { encrypt, decrypt } from "eciesjs";
 import OrbitDB from "orbit-db";
-import { Metadata, MetadataStore } from "./types";
+import { EncryptedReadKey, Metadata, MetadataStore } from "./types";
 import DocumentStore from "orbit-db-docstore";
 import pathBrowserify from "path-browserify";
 
@@ -49,7 +49,7 @@ export async function getMetadata(
         if (!options.create) throw new Error(`no such file: ${path}`);
         if (!options.writeAccess) options.writeAccess = [];
         metadata = await orbitdb.docstore<Metadata>(
-            pathBrowserify.join("__INFO__", path),
+            pathBrowserify.join("__METADATA__", path),
             {
                 indexBy: "cid",
                 accessController: {
@@ -72,7 +72,6 @@ export async function getMetadata(
 }
 
 export function encryptKey(key: string, id: string) {
-    console.log(key);
     return encrypt(id, Buffer.from(key)).toString("base64");
 }
 
@@ -84,4 +83,17 @@ export function decryptKey(
         Buffer.from(sk.marshal()),
         Buffer.from(encryptedKey, "base64")
     ).toString();
+}
+
+export function mergeArray(ary1: any[], ary2: any[]) {
+    return Array.from(new Set([...ary1, ...ary2]));
+}
+export function deepMergeArray(
+    ary1: EncryptedReadKey[],
+    ary2: EncryptedReadKey[]
+) {
+    return [...ary1, ...ary2].filter(
+        (element, index, self) =>
+            self.findIndex((e) => e.id === element.id) === index
+    );
 }

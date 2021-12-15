@@ -35,7 +35,7 @@ export default class FS {
             identity: fs.identity,
         });
         fs.metadataStore = await fs.orbitdb.docstore(
-            options.metadataStoreAddress || "__FILEINFOSTORE__",
+            options.metadataStoreAddress || "__METADATASTORE__",
             {
                 indexBy: "path",
             }
